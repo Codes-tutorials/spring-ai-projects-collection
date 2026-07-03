@@ -1,0 +1,78 @@
+version: '3.8'
+
+services:
+
+  # ===== Redis =====
+  redis:
+    image: redis:7-alpine
+    container_name: order-demo-redis
+    ports:
+      - "6379:6379"
+    command: >
+      redis-server
+        --notify-keyspace-events Ex
+        --requirepass ${REDIS_PASSWORD:-}
+        --loglevel warning
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 5s
+    restart: unless-stopped
+
+  # ===== RabbitMQ =====
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: order-demo-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"    # Management UI: http://localhost:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS:-guest}
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+
+  # ===== Spring Boot Application =====
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: order-demo-app
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_PROFILES_ACTIVE: local
+      SPRING_DATA_REDIS_HOST: redis
+      SPRING_DATA_REDIS_PORT: 6379
+      SPRING_RABBITMQ_HOST: rabbitmq
+      SPRING_RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-guest}
+      CORS_ALLOWED_ORIGINS: "http://localhost:8080"
+    depends_on:
+      redis:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/actuator/health/readiness || exit 1"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+volumes:
+  redis-data:
+  rabbitmq-data:

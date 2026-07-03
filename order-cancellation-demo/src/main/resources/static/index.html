@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delayed Tasks: Order Cancellation Engine</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-glows">
+        <div class="glow glow-1"></div>
+        <div class="glow glow-2"></div>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-content">
+                <div class="logo-area">
+                    <span class="logo-icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                    <div>
+                        <h1>Order Expiration Engine</h1>
+                        <p class="subtitle">5 Distributed Delayed-Task Architectures in Spring Boot</p>
+                    </div>
+                </div>
+                <div class="system-status">
+                    <span class="status-indicator online"></span>
+                    <span class="status-text">SSE Live Feed Connected</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Panel: Create Order & Info -->
+            <section class="left-panel">
+                <!-- Order Creation Card -->
+                <div class="glass-card panel-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-plus-circle text-primary"></i> Create Mock Order</h2>
+                        <p class="card-subtitle">Dispatch an order to trigger the delayed task simulation</p>
+                    </div>
+                    <form id="create-order-form" class="order-form">
+                        <div class="form-group">
+                            <label for="approach">Select Cancellation Strategy</label>
+                            <div class="strategy-selector">
+                                <label class="strategy-option">
+                                    <input type="radio" name="approach" value="DB_POLLING" checked>
+                                    <div class="option-content">
+                                        <div class="option-title">DB Polling</div>
+                                        <div class="option-desc">Scan DB with @Scheduled</div>
+                                    </div>
+                                </label>
+                                <label class="strategy-option">
+                                    <input type="radio" name="approach" value="DELAY_QUEUE">
+                                    <div class="option-content">
+                                        <div class="option-title">Java DelayQueue</div>
+                                        <div class="option-desc">JVM In-Memory Blocking Queue</div>
+                                    </div>
+                                </label>
+                                <label class="strategy-option">
+                                    <input type="radio" name="approach" value="TIME_WHEEL">
+                                    <div class="option-content">
+                                        <div class="option-title">Time Wheel</div>
+                                        <div class="option-desc">Netty HashedWheelTimer</div>
+                                    </div>
+                                </label>
+                                <label class="strategy-option">
+                                    <input type="radio" name="approach" value="REDIS_ZSET">
+                                    <div class="option-content">
+                                        <div class="option-title">Redis ZSet</div>
+                                        <div class="option-desc">Sorted Set (timestamp score)</div>
+                                    </div>
+                                </label>
+                                <label class="strategy-option">
+                                    <input type="radio" name="approach" value="REDIS_EXPIRED">
+                                    <div class="option-content">
+                                        <div class="option-title">Redis Expire</div>
+                                        <div class="option-desc">Keyspace Expired Events</div>
+                                    </div>
+                                </label>
+                                <label class="strategy-option">
+                                    <input type="radio" name="approach" value="RABBITMQ_DLX">
+                                    <div class="option-content">
+                                        <div class="option-title">RabbitMQ DLX</div>
+                                        <div class="option-desc">Message TTL & Dead Letter Queue</div>
+                                    </div>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="amount">Order Amount ($)</label>
+                                <div class="input-wrapper">
+                                    <span class="input-icon">$</span>
+                                    <input type="number" id="amount" min="1" step="0.01" value="250.00" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="delaySeconds">Expiration Delay (s)</label>
+                                <div class="input-wrapper">
+                                    <input type="number" id="delaySeconds" min="5" max="300" value="30" required>
+                                    <span class="input-icon-right">sec</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary btn-block">
+                            <span class="btn-text">Generate Order & Start Timer</span>
+                            <span class="btn-glow"></span>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Strategy Tradeoffs Card -->
+                <div class="glass-card panel-card tradeoffs-card">
+                    <div class="card-header">
+                        <h2><i class="fa-solid fa-scale-balanced text-secondary"></i> Architecture Comparison</h2>
+                        <p class="card-subtitle">Trade-offs for production workloads</p>
+                    </div>
+                    <div class="table-container">
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Approach</th>
+                                    <th>Scalability</th>
+                                    <th>Reliability</th>
+                                    <th>Latency</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong class="text-primary">DB Polling</strong></td>
+                                    <td class="badge badge-red">Poor</td>
+                                    <td class="badge badge-green">Excellent</td>
+                                    <td>High (Poll rate dependent)</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-primary">Java DelayQueue</strong></td>
+                                    <td class="badge badge-red">Poor</td>
+                                    <td class="badge badge-red">Poor (Memory-only)</td>
+                                    <td>Sub-millisecond</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-primary">Time Wheel</strong></td>
+                                    <td class="badge badge-yellow">Medium</td>
+                                    <td class="badge badge-red">Poor (Memory-only)</td>
+                                    <td>Sub-millisecond</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-primary">Redis ZSET</strong></td>
+                                    <td class="badge badge-green">Excellent</td>
+                                    <td class="badge badge-green">Excellent</td>
+                                    <td>Low</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-primary">Redis Pub/Sub</strong></td>
+                                    <td class="badge badge-green">Excellent</td>
+                                    <td class="badge badge-red">Poor (Fire-&-forget)</td>
+                                    <td>Instant</td>
+                                </tr>
+                                <tr>
+                                    <td><strong class="text-primary">RabbitMQ DLX</strong></td>
+                                    <td class="badge badge-green">Excellent</td>
+                                    <td class="badge badge-green">Excellent</td>
+                                    <td>Instant</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Live Board & Logs -->
+            <section class="right-panel">
+                <!-- Active Orders Monitor -->
+                <div class="glass-card panel-card orders-monitor-card">
+                    <div class="card-header flex-between">
+                        <div>
+                            <h2><i class="fa-solid fa-rectangle-list text-accent"></i> Active Orders Board</h2>
+                            <p class="card-subtitle">Real-time status of orders placed in database</p>
+                        </div>
+                        <div class="filter-controls">
+                            <button class="filter-btn active" data-filter="ALL">All</button>
+                            <button class="filter-btn" data-filter="UNPAID">Unpaid</button>
+                            <button class="filter-btn" data-filter="PAID">Paid</button>
+                            <button class="filter-btn" data-filter="CANCELLED">Cancelled</button>
+                        </div>
+                    </div>
+                    
+                    <div id="orders-grid" class="orders-grid">
+                        <!-- Order Cards get injected dynamically here -->
+                        <div class="empty-state">
+                            <i class="fa-solid fa-basket-shopping"></i>
+                            <p>No orders created yet. Submit the form on the left to start a simulation!</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SSE Terminal Log -->
+                <div class="glass-card panel-card terminal-card">
+                    <div class="card-header flex-between">
+                        <div>
+                            <h2><i class="fa-solid fa-terminal text-success"></i> Server-Sent Events Stream Log</h2>
+                            <p class="card-subtitle">Raw application lifecycle logs pushed by the Spring Boot server</p>
+                        </div>
+                        <button id="clear-logs" class="btn-clear"><i class="fa-solid fa-trash-can"></i> Clear</button>
+                    </div>
+                    <div class="terminal-body" id="terminal-body">
+                        <div class="terminal-line system">[SYSTEM] Stream logs will appear here in real-time as tasks execute...</div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Custom JavaScript -->
+    <script src="app.js"></script>
+</body>
+</html>

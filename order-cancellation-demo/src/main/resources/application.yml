@@ -1,0 +1,62 @@
+spring:
+  application:
+    name: order-cancellation-demo
+  profiles:
+    active: local      # Override with -Dspring.profiles.active=prod
+
+  # JPA shared settings (non-sensitive)
+  jpa:
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: false
+        jdbc:
+          time_zone: UTC
+
+  # Flyway — always enabled, uses active datasource
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+
+# Actuator — expose health & prometheus in all profiles
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+  health:
+    redis:
+      enabled: true
+    rabbit:
+      enabled: true
+  info:
+    env:
+      enabled: true
+
+# App custom properties
+app:
+  order:
+    expiration-delay-seconds: 30
+  security:
+    cors:
+      allowed-origins: ${CORS_ALLOWED_ORIGINS:http://localhost:4200,http://localhost:8080}
+
+# SpringDoc OpenAPI
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true
+    tags-sorter: alpha
+
+info:
+  app:
+    name: Order Cancellation Engine
+    description: 5 delayed-task strategies for auto-cancelling unpaid orders
+    version: 1.0.0

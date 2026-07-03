@@ -1,2 +1,22 @@
 /.vscode
 /spring-ai-website
+
+# Java Build Artifacts
+**/target/
+**/build/
+*.class
+
+# IDE and Project configuration
+**/.idea/
+**/*.iml
+**/*.ipr
+**/*.iws
+**/.settings/
+**/.classpath
+**/.project
+
+# Local credentials configuration
+**/.env
+**/application-*.yml
+**/application-*.properties
+**/application-local.*
